@@ -1,5 +1,14 @@
 #include "WPILib.h"
 #include "math.h"
+
+#define PI 3.1415926535897932384626433832795
+#define E 2.71828182845904523536028747
+#define G -9.80665
+#define BALL_DRAG 0.5
+#define SHOOTER_ANGLE PI / 180.0 * 45.0 //45 degrees
+#define ROBOT_HEIGHT 2.0
+#define HOOP_HEIGHT 8.0
+
 class RobotDemo : public SimpleRobot
 {
 	Joystick stick;
@@ -14,13 +23,14 @@ public:
 	{
 	}
 
-#include "mecanumDrive.h"
+#include "mustyLib.h"
 
 	void Autonomous(void)
 	{
 	}
 	void OperatorControl(void)
 	{
+		AxisCamera &camera = AxisCamera::GetInstance();
 		DriverStationLCD *output = DriverStationLCD::GetInstance();
 		while (IsOperatorControl())
 		{
@@ -35,20 +45,20 @@ public:
 			float magJoy = sqrt(xJoy * xJoy + yJoy * yJoy);
 			
 			float angleJoy;
-			if (yJoy != 0)
-				angleJoy = 90 - yJoy / fabs(yJoy) * acos(xJoy / magJoy);
+			if (yJoy != 0.0)
+				angleJoy = PI / 2.0 - yJoy / fabs(yJoy) * acos(xJoy / magJoy);
 			else
-				if (yJoy >= 0)
-					angleJoy = 90;
+				if (yJoy >= 0.0)
+					angleJoy = PI / 2.0;
 				else
-					angleJoy = - 90;
-			if (angleJoy > 180)
-				angleJoy -= 360;
+					angleJoy = - PI / 2.0;
+			if (angleJoy > PI)
+				angleJoy -= 2.0 * PI;
 			
 			mecanumDrive(magJoy, angleJoy, twistJoy); 
 			
-			
-			
+			//getV_0(distance_to_the_bottom_of_the_hoop);
+						
 			output->Printf(DriverStationLCD::kMain_Line6, 9, "%7.1f", xJoy);
 			output->Printf(DriverStationLCD::kUser_Line2, 9, "%7.1f", yJoy);
 			output->Printf(DriverStationLCD::kUser_Line3, 9, "%7.1f", twistJoy);
