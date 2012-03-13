@@ -3,23 +3,31 @@
 
 #define PI 3.1415926535897932384626433832795
 #define E 2.71828182845904523536028747
-#define G -9.80665
+#define G 9.80665
 #define BALL_DRAG 0.5
 #define SHOOTER_ANGLE PI / 180.0 * 45.0 //45 degrees
 #define ROBOT_HEIGHT 2.0
 #define HOOP_HEIGHT 8.0
 
-class RobotDemo : public SimpleRobot
+class Mustybot : public SimpleRobot
 {
 	Joystick stick;
 	Jaguar FL,FR,BL,BR;
+	Victor LazySusan,LShooter,RShooter,ConvBelt;
+	Relay LManip,RManip;
 public:
-	RobotDemo(void):
+	Mustybot(void):
 		stick(1, 3, 12),
 		FL(3),
 		FR(5),
 		BL(4),
-		BR(6)
+		BR(6),
+		LazySusan(7),
+		LShooter(1),
+		RShooter(2),
+		ConvBelt(8),
+		LManip(1,Relay::kBothDirections),
+		RManip(2,Relay::kBothDirections)
 	{
 	}
 
@@ -30,7 +38,6 @@ public:
 	}
 	void OperatorControl(void)
 	{
-		AxisCamera &camera = AxisCamera::GetInstance();
 		DriverStationLCD *output = DriverStationLCD::GetInstance();
 		while (IsOperatorControl())
 		{
@@ -55,6 +62,8 @@ public:
 			if (angleJoy > PI)
 				angleJoy -= 2.0 * PI;
 			
+			LazySusan.Set(xJoy);
+			
 			mecanumDrive(magJoy, angleJoy, twistJoy); 
 			
 			//getV_0(distance_to_the_bottom_of_the_hoop);
@@ -75,3 +84,5 @@ public:
 		}
 	}
 };
+
+START_ROBOT_CLASS(Mustybot);

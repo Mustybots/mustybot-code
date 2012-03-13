@@ -1,6 +1,6 @@
 #define DRAG BALL_DRAG
 #define vAngle SHOOTER_ANGLE
-#define zPos HOOP_HEIGHT - ROBOT_HEIGHT
+#define zPos ROBOT_HEIGHT - HOOP_HEIGHT
 
 float csc(float angle)
 {
@@ -19,10 +19,10 @@ float cot(float angle)
 
 float lambertW(float w)
 {
-	float root = - 0.35;
-	for(int i=0; 100>i; i++)
+	float root = - 1 / E + 0.001;
+	for(int i=0; i<10000; i++)
 	{
-		root = (root) / (root + 1) - w / (pow(E, root) * (root + 1)) + root;
+		root = root - (((root) / (root + 1)) - (w / (pow(E, root) * (root + 1))));
 	}
 	return root;
 }
