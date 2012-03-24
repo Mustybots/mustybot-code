@@ -8,16 +8,23 @@
 #define SHOOTER_ANGLE PI / 180.0 * 45.0 //45 degrees
 #define ROBOT_HEIGHT 2.0
 #define HOOP_HEIGHT 8.0
+#define BRIDGETIME 0.1
+#define LAZYSPEEDMULT 1.0
+#define TIMEVALUE 0.1
 
 class Mustybot : public SimpleRobot
 {
-	Joystick stick;
+	Joystick DriveStick;
+	Joystick ShooterStick;
 	Jaguar FL,FR,BL,BR;
 	Victor LazySusan,LShooter,RShooter,ConvBelt;
-	Relay LManip,RManip;
+	Relay LManip,RManip,BallStop;
+	Timer BManip;
+	Servo CameraRotate;
 public:
 	Mustybot(void):
-		stick(1, 3, 12),
+		DriveStick(1, 3, 12),
+		ShooterStick(2, 2, 10),
 		FL(3),
 		FR(5),
 		BL(4),
@@ -27,8 +34,12 @@ public:
 		RShooter(2),
 		ConvBelt(8),
 		LManip(1,Relay::kBothDirections),
-		RManip(2,Relay::kBothDirections)
+		RManip(2,Relay::kBothDirections),
+		BallStop(3,Relay::kBothDirections),
+		CameraRotate(9),
+		BManip()
 	{
+		BManip.Start();
 	}
 
 #include "mustyLib.h"
@@ -38,13 +49,19 @@ public:
 	}
 	void OperatorControl(void)
 	{
+		double startTime,startTime2=-TIMEVALUE;
+		bool prevState = false;
+		bool ManipUp = true;
+		bool Released = true;
+		float idk;
+		bool pressed = false;
+		bool blockerDir;
 		DriverStationLCD *output = DriverStationLCD::GetInstance();
-		float YJoy = 1.0;
 		while (IsOperatorControl())
 		{
-			float xJoy = - stick.GetRawAxis(1);
-			float yJoy = - stick.GetRawAxis(2);
-			float twistJoy = stick.GetRawAxis(3);
+			float xJoy = - DriveStick.GetRawAxis(1);
+			float yJoy = - DriveStick.GetRawAxis(2);
+			float twistJoy = DriveStick.GetRawAxis(3);
 			
 			xJoy = xJoy * fabs(xJoy) * fabs(xJoy);			
 			yJoy = yJoy * fabs(yJoy) * fabs(yJoy);
@@ -63,29 +80,113 @@ public:
 			if (angleJoy > PI)
 				angleJoy -= 2.0 * PI;
 			
-			YJoy = - YJoy;
 			
+			mecanumDrive(magJoy, angleJoy, twistJoy);
 			
-			//mecanumDrive(magJoy, angleJoy, twistJoy);
-			if (YJoy == 0.0)
-				RManip.Set(Relay::kOff);
-			if (YJoy < 0.0)
-				RManip.Set(Relay::kReverse);
-			if (YJoy > 0.0)
-				RManip.Set(Relay::kForward);
+			Released = Released or !DriveStick.GetRawButton(1);
+			
+			idk = 0;
+			
+			if (DriveStick.GetRawButton(1))
+			{
+				if (prevState == false)
+				{
+					startTime = BManip.Get();
+					prevState = true;
+					Released = false;
+				}
+			}
+			if (prevState == true)
+			{
+				if (BManip.Get() < startTime + BRIDGETIME)
+				{
+					if (ManipUp)
+					{
+						RManip.Set(Relay::kForward);
+						LManip.Set(Relay::kReverse);
+						idk = 1;
+					}
+					else
+					{
+						RManip.Set(Relay::kReverse);
+						LManip.Set(Relay::kForward);
+						idk = 2;
+					}
+				}
+				else
+				{
+					if (Released)
+					{
+						prevState = false;
+						ManipUp = !ManipUp;
+					}
+				}
+			}
+			
+			float throttle = DriveStick.GetRawAxis(4);
+			if(fabs(throttle)<0.5)
+				throttle = 0.0;
+			else
+				throttle /= -fabs(throttle);
+			
+			ConvBelt.Set(throttle);
+			
+			LazySusan.Set(ShooterStick.GetRawAxis(1)*LAZYSPEEDMULT);
+
+			float shooterSpeed = (1-ShooterStick.GetRawAxis(3))/2;
+			
+			LShooter.Set(shooterSpeed);
+			RShooter.Set(-shooterSpeed);
+			
+			CameraRotate.Set(ShooterStick.GetRawAxis(2));
+			
+			if(ShooterStick.GetRawButton(1)!=pressed)
+			{
+				startTime2 = BManip.Get();
+				if(!pressed)
+				{
+					//release the ball!!!
+					blockerDir = false;
+				}
+				else
+				{
+					blockerDir = true;
+				}
+			}
+			
+			if(BManip.Get()<startTime2+TIMEVALUE)
+			{
+				if(blockerDir)
+				{
+					BallStop.Set(Relay::kReverse);
+				}
+				else
+				{
+					BallStop.Set(Relay::kForward);
+				}
+			}
+			
+			pressed = ShooterStick.GetRawButton(1);
 			
 			//getV_0(distance_to_the_bottom_of_the_hoop);
 						
-			output->Printf(DriverStationLCD::kMain_Line6, 9, "%7.1f", xJoy);
-			output->Printf(DriverStationLCD::kUser_Line2, 9, "%7.1f", yJoy);
-			output->Printf(DriverStationLCD::kUser_Line3, 9, "%7.1f", twistJoy);
-			output->Printf(DriverStationLCD::kUser_Line4, 9, "%7.1f", magJoy);
-			output->Printf(DriverStationLCD::kUser_Line5, 9, "%7.1f", angleJoy);
-			output->Printf(DriverStationLCD::kUser_Line1, 1, "Axis 1");
-			output->Printf(DriverStationLCD::kUser_Line2, 1, "Axis 2");
-			output->Printf(DriverStationLCD::kUser_Line3, 1, "Axis 3");
-			output->Printf(DriverStationLCD::kUser_Line4, 1, "Magnitude");
-			output->Printf(DriverStationLCD::kUser_Line5, 1, "Angle");
+			if (ManipUp)
+			{
+				output->Printf(DriverStationLCD::kMain_Line6, 15, "%7.1f", 1.0);
+			}
+			else
+			{
+				output->Printf(DriverStationLCD::kMain_Line6, 15, "%7.1f", 0.0);
+			}
+			output->Printf(DriverStationLCD::kUser_Line2, 15, "%7.1f", throttle);
+			output->Printf(DriverStationLCD::kUser_Line3, 15, "%7.1f", ShooterStick.GetRawAxis(1)*LAZYSPEEDMULT);
+			output->Printf(DriverStationLCD::kUser_Line4, 15, "%7.1f", shooterSpeed);
+			output->Printf(DriverStationLCD::kUser_Line5, 15, "%7.1f", idk);
+			output->Printf(DriverStationLCD::kUser_Line1, 1, "ManipUp");
+			output->Printf(DriverStationLCD::kUser_Line2, 1, "throttle");
+			output->Printf(DriverStationLCD::kUser_Line3, 1, "Lazy Suzan Speed");
+			output->Printf(DriverStationLCD::kUser_Line4, 1, "shooterSpeed");
+			output->Printf(DriverStationLCD::kUser_Line5, 1, "Bridge move");
 			output->UpdateLCD();
 			
 			
