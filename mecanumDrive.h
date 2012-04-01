@@ -45,6 +45,7 @@ void mecanumDrive(float magnitude, float direction, float rotation)
     
     FL.Set(- wheelSpeeds[0]);
     FR.Set(wheelSpeeds[1]);
+    //FR.Set((1.5 * wheelSpeeds[1] > 1.0) and 1.0 or 1.5 * wheelSpeeds[1]);
     BL.Set(- wheelSpeeds[2]);
     BR.Set(wheelSpeeds[3]);
 }
