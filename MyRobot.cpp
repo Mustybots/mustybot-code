@@ -1,139 +1,167 @@
 #include "WPILib.h"
 #include "math.h"
 
-#define PI 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914564856692346034861045432664821339360726024914127372458700660631558817488152092096282925409171536436789259036001133053054882046652138414695194151160943305727036575959195309218611738193261179310511854807446237996274956735188575272489122793818301194912983367336244065664308602139494639522473719070217986094370277053921717629317675238467481846766940513200056812714526356082778577134275778960917363717872146844090122495343014654958537105079227968925892354201995611212902196086403441815981362977477130996051870721134999999837297804995105973173281609631859502445945534690830264252230825
-#define E 2.71828182845904523536028747135266249775724709369995957496696762772407663035354759457138217852516642742746639193200305992181741359662904357290033429526059563073813232862794349076323382988075319525101901157383418793070215408914993488416750924476146066808226480016847741185374234544243710753907774499206955170276183860626133138458300075204493382656029760673711320070932870912744374704723069697720931014169283681902551510865746377211125238978442505695369677078544996996794686445490598793163688923009879312773617821542499922957635148220826989519366803318252886939849646510582093923982948879332036250944311730123819706841614039701983767932068328237646480429531180232878250981945581530175671736133206981125099618188159304169035159888851934580727386673858942287922849989208680582574927961048419844436346324496848756023362482704197862320900216099023530436994184914631409343173814364054625315209618369088870701676839642437814059271456354906130310720851038375051011574770417189861068739696552126715468895703503540212340784981933432106817012100562788023519303322474501585390473041995777709350366041699732972508868769664035557071622684471625607988265178713419512466520103059212366771943252786753985589448969709640975459185695638023637016211204774272283648961342251644507818244235294863637214174023889344124796357437026375529444833799801612549227850925778256209262264832627793338656648162772516401910590049164499828931505660472580277863186415519565324425869829469593080191529872117255634754639644791014590409058629849679128740687050489585867174798546677575732056812884592054133405392200011378630094556068816674001698420558040336379537645203040243225661352783695117788386387443966253224985065499588623428189970773327617178392803494650143455889707194258639877275471096295374152111513683506275260232648472870392076431005958411661205452970302364725492966693811513732275364509888903136020572481765851180630364428123149655070475102544650117272115551948668508003685322818315219600373562527944951582841882947876108526398139559900673764829224437528718462457803619298197139914756448826260390338144182326251509748279877799643730899703888677822713836057729788241256119071766394650706330452795466185509666618566470971134447401607046262156807174818778443714369882185596709591025968620023537185887485696522000503117343920732113908032936344797273559552773490717837934216370120500545132638354400018632399149070547977805669785335804896690629511943247309958765523681285904138324116072260299833053537087613893963917795745401613722361878936526053815584158718692553860616477983402543512843961294603529133259427949043372990857315802909586313826832914771163963370924003168945863606064584592512699465572483918656420975268508230754425459937691704197778008536273094171016343490769642372229435236612557250881477922315197477806056967253801718077636034624592787784658506560507808442115296975218908740196609066518035165017925046195013665854366327125496399085491442000145747608193022120660243300964127048943903971771951806990869986066365832322787093765022601492910115171776359446020232493002804018677239102880978666056511832600436885088171572386698422422010249505518816948032210025154264946398128736776589276881635983124778865201411741109136011649950766290779436460058519419985601626479076153210387275571269925182756879893027617611461625493564959037980458381823233686120162
-#define G 9.80665
-#define BALL_DRAG 0.5
-#define SHOOTER_ANGLE PI / 180.0 * 45.0 //45 degrees
-#define ROBOT_HEIGHT 2.0
-#define HOOP_HEIGHT 8.0
-#define BRIDGETIME 0.4
-#define LAZYSPEEDMULT -1.0
-#define WHEELRATIO 1.75
-#define AUTOSPEED 0.600
+#define PI 3.14159265358979323846
+#define E 2.718281828459045235360
+
+#define XBOX_A xbox.GetRawButton(1)
+#define XBOX_B xbox.GetRawButton(2)
+#define XBOX_X xbox.GetRawButton(3)
+#define XBOX_Y xbox.GetRawButton(4)
+
+#define XBOX_L_BUMPER xbox.GetRawButton(5)
+#define XBOX_R_BUMPER xbox.GetRawButton(6)
+#define XBOX_TRIGGERS xbox.GetRawAxis(3)
+
+#define XBOX_BACK xbox.GetRawButton(7)
+#define XBOX_START xbox.GetRawButton(8)
+
+#define XBOX_L_STICK_H xbox.GetRawAxis(1)
+#define XBOX_L_STICK_V xbox.GetRawAxis(2)
+#define XBOX_L_STICK_BUTTON xbox.GetRawButton(9)
+
+#define XBOX_R_STICK_H xbox.GetRawAxis(4)
+#define XBOX_R_STICK_V xbox.GetRawAxis(5)
+#define XBOX_R_STICK_BUTTON xbox.GetRawButton(10)
+
+#define XBOX_DPAD_H xbox.GetRawAxis(6)
+
+#define PRINT output->Printf(DriverStationLCD::
+
+#define X_ACCELERATION accelerometer.GetAcceleration(ADXL345_SPI::kAxis_X)
+#define Y_ACCELERATION accelerometer.GetAcceleration(ADXL345_SPI::kAxis_Y)
+#define Z_ACCELERATION accelerometer.GetAcceleration(ADXL345_SPI::kAxis_Z)
+
+#define ROTATION_COEFFICENT 1.0
+
 
 class Mustybot : public SimpleRobot
 {
-	Joystick DriveStick;
-	Joystick ShooterStick;
-	Jaguar FL,FR,BL,BR;
-	Victor LazySusan,LShooter,RShooter,ConvBelt;
-	Relay RManip;
-	Timer BManip;
-	Servo cam;
+	//Declare Objects
+	RobotDrive robot;
+	Victor topShooter, bottomShooter, lazySuzan, conveyer;
+	Joystick xbox;
+	ADXL345_SPI accelerometer;
+	Gyro gyroscope;
 public:
+	
 	Mustybot(void):
-		DriveStick(1, 3, 12),
-		ShooterStick(2, 2, 10),
-		FL(3),
-		FR(5),
-		BL(4),
-		BR(6),
-		LazySusan(7),
-		LShooter(1),
-		RShooter(2),
-		ConvBelt(10),
-		RManip(2,Relay::kBothDirections),
-		BManip(),
-		cam(9)
+		//constucts the objects (in the same order), perameters are the port their PWM cable is connected to unless specified
+		robot(3, 5, 4, 6), //all 4 wheels
+		topShooter(1),
+		bottomShooter(2),
+		lazySuzan(7),
+		conveyer(10),
+		
+		//Joysticks - perameter is the number joystick on the list in the driver station
+		xbox(1),
+		
+		//Digital Inputs - The first perameter is the module number (in our case it will probably always be 1). The devices are pluged into the Digital IO side of the digital sidecar.
+		accelerometer(1, 1, 2, 3, 4, ADXL345_SPI::kRange_2G), //uses the spi protocol. If using two three-pronged pwm cables, plugs in sideways so the first one plugs into the GND, 5V, and digital IO port 1 and the second one plugs into the signal pin of igital IO ports 2, 3, and 4
+	
+		//Analog Inputs - PWM Cables attach to the Analog Breakout Board on top of Module 1 or 5
+		gyroscope(2, 1)
+	
 	{
-		BManip.Start();
+		robot.SetExpiration(0.1);
+		robot.SetInvertedMotor(RobotDrive::kFrontRightMotor, true);
+		robot.SetInvertedMotor(RobotDrive::kRearRightMotor, true);
+		gyroscope.Reset();
 	}
-
-#include "mustyLib.h"
-
 	void Autonomous(void)
 	{
-		float startTime = BManip.Get();
-		LShooter.Set(WHEELRATIO * AUTOSPEED / 3.3);
-		RShooter.Set(AUTOSPEED / 3.3);
-		Wait(5.0);
-		startTime = BManip.Get();
-		while (IsAutonomous())
-		{
-			LShooter.Set(WHEELRATIO * AUTOSPEED / 3.3);
-			RShooter.Set(AUTOSPEED / 3.3);
-			while (BManip.Get()<startTime+4.5 or BManip.Get()>startTime+4.5 and IsAutonomous())
-			{
-				ConvBelt.Set(1.0);
-			}
-			ConvBelt.Set(0.0);
-		}
-	
 	}
-	
 	void OperatorControl(void)
 	{
-		DriverStationLCD *output = DriverStationLCD::GetInstance();
+		robot.SetSafetyEnabled(true);
+		
+		//variable declarations
+		float acceleration, xDir, yDir, rotate, shootSpeed, suzanSpeed, driveMag, driveAng, convSpeed, heading = 0;
+		
+		DriverStationLCD *output = DriverStationLCD::GetInstance(); //allows feedback to the driver station
+		
 		while (IsOperatorControl())
 		{
-			float xJoy = DriveStick.GetRawAxis(1);
-			float yJoy = - DriveStick.GetRawAxis(2);
-			float twistJoy = DriveStick.GetRawAxis(3);
+			GetWatchdog().Feed();
+			acceleration = X_ACCELERATION;
 			
-			xJoy = xJoy * fabs(xJoy) * fabs(xJoy);			
-			yJoy = yJoy * fabs(yJoy) * fabs(yJoy);
-			twistJoy = twistJoy * fabs(twistJoy) * fabs(twistJoy);
+			xDir = XBOX_L_STICK_H;
+			yDir = XBOX_L_STICK_V;
+			rotate = - XBOX_R_STICK_H;
+			shootSpeed = - XBOX_TRIGGERS;
+			suzanSpeed = XBOX_DPAD_H;
 			
-			float magJoy = sqrt(xJoy * xJoy + yJoy * yJoy);
+			if(rotate < 0.15 && rotate > -0.15)
+				rotate = 0;
 			
-			float angleJoy;
-			if (yJoy != 0.0)
-				angleJoy = PI / 2.0 - yJoy / fabs(yJoy) * acos(xJoy / magJoy);
+			if(yDir == 0.0)
+			{
+				driveMag = fabs(xDir);
+				driveAng = ((fabs(xDir) / xDir) + 1.0) * 90.0;
+			}
 			else
-				if (yJoy >= 0.0)
-					angleJoy = PI / 2.0;
+			{
+				driveMag = sqrt(xDir * xDir + yDir * yDir); //using some trig to convert to polar coodinates
+				driveAng = fabs(yDir) / yDir * acos(xDir / driveMag) * 180.0 / PI;
+			}
+			
+			driveMag = driveMag * driveMag * driveMag; //cubes the magnetude so the controller is less sensitivein the middle but still reaches its full potential
+			
+			if(XBOX_A)//conveyer goes forward
+				convSpeed = 1.0;
+			else
+			{
+				if(XBOX_B) //*theoretically* makes the conveyer belt go in reverse when the B button is pressed
+					convSpeed = - 1.0;
 				else
-					angleJoy = - PI / 2.0;
-			if (angleJoy > PI)
-				angleJoy -= 2.0 * PI;
+					convSpeed = 0.0;
+			}
 			
 			
-			mecanumDrive(magJoy, angleJoy, twistJoy);
+			if(XBOX_L_BUMPER) //if the left bumper button is pressed, stop everything until the button is released
+			{
+				gyroscope.Reset();
+				heading = 0;
+				xDir = 0.0;
+				yDir = 0.0;
+				rotate = 0.0;
+				shootSpeed = 0.0;
+				suzanSpeed = 0.0;
+				convSpeed = 0.0;
+				driveMag = 0.0;
+				driveAng = 0.0;
+			}
 			
-			if(DriveStick.GetRawButton(7))
-				RManip.Set(Relay::kForward);
-			else
-				RManip.Set(Relay::kOff);
-			if(DriveStick.GetRawButton(8))
-				RManip.Set(Relay::kReverse);
-		
-			float throttle = DriveStick.GetRawAxis(4);
-			if(fabs(throttle)<0.4)
-				throttle = 0.0;
-			else
-				throttle /= -fabs(throttle);
+			heading += ROTATION_COEFFICENT * rotate;
 			
-			cam.Set(DriveStick.GetRawAxis(2));
-			
-			ConvBelt.Set(throttle);
-			
-			LazySusan.Set(ShooterStick.GetRawAxis(1)*LAZYSPEEDMULT);
-
-			float shooterSpeed = (1-ShooterStick.GetRawAxis(3)) / 2.0;
-			
-			shooterSpeed = shooterSpeed * shooterSpeed * shooterSpeed;
-			
-			LShooter.Set(WHEELRATIO * shooterSpeed / 3.3);
-			RShooter.Set(shooterSpeed / 3.3);
-								
-			//getV_0(distance_to_the_bottom_of_the_hoop);
-						
-			output->Printf(DriverStationLCD::kMain_Line6, 15, "%7.3f", xJoy);
-			output->Printf(DriverStationLCD::kUser_Line2, 15, "%7.3f", yJoy);
-			output->Printf(DriverStationLCD::kUser_Line3, 15, "%7.3f", twistJoy);
-			output->Printf(DriverStationLCD::kUser_Line4, 15, "%7.3f", throttle);
-			output->Printf(DriverStationLCD::kUser_Line5, 15, "%7.3f", shooterSpeed);
-			output->Printf(DriverStationLCD::kUser_Line1, 1, "x-axis");
-			output->Printf(DriverStationLCD::kUser_Line2, 1, "y-axis");
-			output->Printf(DriverStationLCD::kUser_Line3, 1, "twist-axis");
-			output->Printf(DriverStationLCD::kUser_Line4, 1, "Conveyer");
-			output->Printf(DriverStationLCD::kUser_Line5, 1, "Shooter");
+			//sets thespeeds on the Victors
+			gyroHolonomicDrive(driveMag, driveAng, heading);
+			topShooter.Set(0.5 * shootSpeed);
+			bottomShooter.Set(0.5 * shootSpeed);
+			lazySuzan.Set(suzanSpeed);
+			conveyer.Set(convSpeed);
+					
+			//Gives feedback to the driverstation. Will eventually become the SmartDashboard.
+			PRINT kMain_Line6, 15, "%7.3f", xDir);
+			PRINT kUser_Line2, 15, "%7.3f", yDir);
+			PRINT kUser_Line3, 15, "%7.3f", rotate);
+			PRINT kUser_Line4, 15, "%7.3f", acceleration);
+			PRINT kUser_Line5, 15, "%7.3f", shootSpeed);
+			PRINT kUser_Line1, 1, "x-axis");
+			PRINT kUser_Line2, 1, "y-axis");
+			PRINT kUser_Line3, 1, "rotation");
+			PRINT kUser_Line4, 1, "acceleration");
+			PRINT kUser_Line5, 1, "shooter");
 			output->UpdateLCD();
-			
-			
 		}
+	}
+	void gyroHolonomicDrive(float magnetude, float angle, float heading)
+	{
+		float gyroAngle = gyroscope.GetAngle();
+		gyroAngle = ((int)(heading - gyroAngle) % 360) / 90.0;
+		if(fabs(gyroAngle) > 1.0)
+			gyroAngle /= fabs(gyroAngle);
+		robot.HolonomicDrive(magnetude, angle, gyroAngle);
 	}
 };
 
