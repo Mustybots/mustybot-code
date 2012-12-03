@@ -1,5 +1,4 @@
-#include "WPILib.h"
-#include "math.h"
+#include "MustyLib.h"
 
 #define PI 3.14159265358979323846
 #define E 2.718281828459045235360
@@ -26,8 +25,6 @@
 
 #define XBOX_DPAD_H xbox.GetRawAxis(6)
 
-#define PRINT output->Printf(DriverStationLCD::
-
 #define X_ACCELERATION accelerometer.GetAcceleration(ADXL345_SPI::kAxis_X)
 #define Y_ACCELERATION accelerometer.GetAcceleration(ADXL345_SPI::kAxis_Y)
 #define Z_ACCELERATION accelerometer.GetAcceleration(ADXL345_SPI::kAxis_Z)
@@ -43,6 +40,7 @@ class Mustybot : public SimpleRobot
 	Joystick xbox;
 	ADXL345_SPI accelerometer;
 	Gyro gyroscope;
+	SmartDashboard* dash;
 public:
 	
 	Mustybot(void):
@@ -60,9 +58,9 @@ public:
 		accelerometer(1, 1, 2, 3, 4, ADXL345_SPI::kRange_2G), //uses the spi protocol. If using two three-pronged pwm cables, plugs in sideways so the first one plugs into the GND, 5V, and digital IO port 1 and the second one plugs into the signal pin of igital IO ports 2, 3, and 4
 	
 		//Analog Inputs - PWM Cables attach to the Analog Breakout Board on top of Module 1 or 5
-		gyroscope(2, 1)
-	
+		gyroscope(2, 1)	
 	{
+		dash = SmartDashboard::GetInstance(); //allows feedback throgh the driver station to the driver station
 		robot.SetExpiration(0.1);
 		robot.SetInvertedMotor(RobotDrive::kFrontRightMotor, true);
 		robot.SetInvertedMotor(RobotDrive::kRearRightMotor, true);
@@ -77,8 +75,6 @@ public:
 		
 		//variable declarations
 		float acceleration, xDir, yDir, rotate, shootSpeed, suzanSpeed, driveMag, driveAng, convSpeed, heading = 0;
-		
-		DriverStationLCD *output = DriverStationLCD::GetInstance(); //allows feedback to the driver station
 		
 		while (IsOperatorControl())
 		{
@@ -134,34 +130,16 @@ public:
 			
 			heading += ROTATION_COEFFICENT * rotate;
 			
-			//sets thespeeds on the Victors
-			gyroHolonomicDrive(driveMag, driveAng, heading);
+			//sets the speeds on the Victors and Jaguars (wheels)
+			gyroHolonomicDrive(&robot, &gyroscope, driveMag, driveAng, heading);
 			topShooter.Set(0.5 * shootSpeed);
 			bottomShooter.Set(0.5 * shootSpeed);
 			lazySuzan.Set(suzanSpeed);
 			conveyer.Set(convSpeed);
-					
-			//Gives feedback to the driverstation. Will eventually become the SmartDashboard.
-			PRINT kMain_Line6, 15, "%7.3f", xDir);
-			PRINT kUser_Line2, 15, "%7.3f", yDir);
-			PRINT kUser_Line3, 15, "%7.3f", rotate);
-			PRINT kUser_Line4, 15, "%7.3f", acceleration);
-			PRINT kUser_Line5, 15, "%7.3f", shootSpeed);
-			PRINT kUser_Line1, 1, "x-axis");
-			PRINT kUser_Line2, 1, "y-axis");
-			PRINT kUser_Line3, 1, "rotation");
-			PRINT kUser_Line4, 1, "acceleration");
-			PRINT kUser_Line5, 1, "shooter");
-			output->UpdateLCD();
+			
+			dash->PutString("Xbox Controller", "");
+			dash->PutDouble("Left Joystick", xDir);
 		}
-	}
-	void gyroHolonomicDrive(float magnetude, float angle, float heading)
-	{
-		float gyroAngle = gyroscope.GetAngle();
-		gyroAngle = ((int)(heading - gyroAngle) % 360) / 90.0;
-		if(fabs(gyroAngle) > 1.0)
-			gyroAngle /= fabs(gyroAngle);
-		robot.HolonomicDrive(magnetude, angle, gyroAngle);
 	}
 };
 
