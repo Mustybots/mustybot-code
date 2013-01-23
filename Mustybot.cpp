@@ -31,7 +31,7 @@ public:
 	{
 		while (IsEnabled() && IsOperatorControl()) // loop "forever"
 		{
-			drive.ArcadeDrive(-xbox.getAxis(Xbox::L_STICK_V), xbox.getAxis(Xbox::L_STICK_H), false);
+			drive.ArcadeDrive(xbox.getAxis(Xbox::L_STICK_V), xbox.getAxis(Xbox::L_STICK_H), false);
 		}
 	}
 };
