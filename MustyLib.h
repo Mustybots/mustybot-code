@@ -1,15 +1,11 @@
 #include "WPILib.h"
 #include "math.h"
-#include "Vision/RGBImage.h"
-#include "Vision/BinaryImage.h"
+#include "Xbox.h"
 
-void gyroHolonomicDrive(RobotDrive* robot, Gyro* gyroscope, float magnetude, float angle, float heading)
-{
-	float gyroAngle = gyroscope->GetAngle();
-	gyroAngle = ((int)(heading - gyroAngle) % 360) / 90.0;
-	if(fabs(gyroAngle) > 1.0)
-		gyroAngle /= fabs(gyroAngle);
-	if(fabs(gyroAngle) < 0.1)
-		gyroAngle = 0;
-	robot->HolonomicDrive(magnetude, angle, gyroAngle);
-}
+#ifndef PI
+#define PI 3.14159265358979323846
+#endif
+
+#ifndef E
+#define	E  2.71828182845904523536
+#endif
