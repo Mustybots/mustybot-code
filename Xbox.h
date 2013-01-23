@@ -3,6 +3,7 @@
 
 class Xbox
 {
+private:
 	Joystick controller;
 public:
 		Xbox(int port) : controller(port) {}
@@ -23,7 +24,10 @@ public:
 				return controller.GetRawButton(axis);
 		}
 
-		~Xbox() {}
+		~Xbox()
+		{
+
+		}
 };
 
 #endif
