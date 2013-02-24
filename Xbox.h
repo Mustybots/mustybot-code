@@ -19,9 +19,15 @@ public:
 		float getAxis(kAxis axis)
 		{
 			if(axis == L_STICK_V || axis == R_STICK_V || axis == DPAD_V)
-				return -controller.GetRawButton(axis);
+				if(fabs(controller.GetRawAxis(axis))>0.1)
+					return -controller.GetRawAxis(axis);
+				else
+					return 0;
 			else
-				return controller.GetRawButton(axis);
+				if(fabs(controller.GetRawAxis(axis))>0.1)
+					return -controller.GetRawAxis(axis);
+				else
+					return 0;
 		}
 
 		~Xbox()
